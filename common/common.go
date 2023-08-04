@@ -4,6 +4,7 @@ const (
 	RootPath   = "/root/"
 	MntPath    = "/root/mnt/"
 	WriteLayer = "writeLayer"
+	workPath   = "work"
 )
 
 const (

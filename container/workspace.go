@@ -26,13 +26,19 @@ func NewWorkSpace(volume, containerName, imageName string) error {
 		logrus.Errorf("create write layer, err: %v", err)
 		return err
 	}
-	// 3. 创建挂载点，将只读层和读写层挂载到指定位置
+	// 3. 创建工作目录
+	err = createWorkDir(containerName)
+	if err != nil {
+		logrus.Errorf("creat work dir, err: %v", err)
+		return err
+	}
+	// 4. 创建挂载点，将只读层和读写层挂载到指定位置
 	err = CreateMountPoint(containerName, imageName)
 	if err != nil {
 		logrus.Errorf("create mount point, err: %v", err)
 		return err
 	}
-	// 4. 设置宿主机与容器文件映射
+	// 5. 设置宿主机与容器文件映射
 	mountVolume(containerName, imageName, volume)
 	return nil
 }
@@ -71,6 +77,20 @@ func createWriteLayer(containerName string) error {
 	return nil
 }
 
+// 创建工作目录
+func createWorkDir(containerName string) error {
+	workPath := path.Join(common.RootPath, common.WorkPath, containerName)
+	_, err := os.Stat(workPath)
+	if err != nil && os.IsNotExist(err) {
+		err = os.MkdirAll(workPath, os.ModePerm)
+		if err != nil {
+			logrus.Errorf("mkdir work dir, err: %v", err)
+			return err
+		}
+	}
+	return nil
+}
+
 func CreateMountPoint(containerName, imageName string) error {
 	mntPath := path.Join(common.MntPath, containerName)
 	_, err := os.Stat(mntPath)
@@ -85,8 +105,9 @@ func CreateMountPoint(containerName, imageName string) error {
 	// 将宿主机上关于容器的读写层和只读层挂载到 /root/mnt/容器名 里
 	writeLayPath := path.Join(common.RootPath, common.WriteLayer, containerName)
 	imagePath := path.Join(common.RootPath, imageName)
-	dirs := fmt.Sprintf("dirs=%s:%s", writeLayPath, imagePath)
-	cmd := exec.Command("mount", "-t", "aufs", "-o", dirs, "none", mntPath)
+	workPath := path.Join(common.RootPath, common.WorkPath, containerName)
+	dirs := fmt.Sprintf("lowerdir=%s,upperdir=%s,workdir=%s", imagePath, writeLayPath, workPath)
+	cmd := exec.Command("mount", "-t", "overlay", "overlay", "-o", dirs, mntPath)
 	if err := cmd.Run(); err != nil {
 		logrus.Errorf("mnt cmd run, err: %v", err)
 		return err
