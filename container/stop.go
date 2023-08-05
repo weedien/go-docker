@@ -3,6 +3,7 @@ package container
 import (
 	"encoding/json"
 	"io/ioutil"
+	"os"
 	"path"
 	"strconv"
 	"syscall"
@@ -26,6 +27,14 @@ func StopContainer(containerName string) {
 			logrus.Errorf("stop container, pid: %d, err: %v", pid, err)
 			return
 		}
+		isRun := isProcessRunning(pid)
+		if isRun {
+			err := syscall.Kill(pid, syscall.SIGKILL)
+			if err != nil {
+				logrus.Errorf("stop container (twice), pid: %d, err: %v", pid, err)
+				return
+			}
+		}
 		// 修改容器状态
 		info.Status = common.Stop
 		info.Pid = ""
@@ -36,4 +45,16 @@ func StopContainer(containerName string) {
 			logrus.Errorf("write container config.json, err: %v", err)
 		}
 	}
+}
+
+func isProcessRunning(pid int) bool {
+	// 尝试通过 PID 获取进程
+	process, err := os.FindProcess(pid)
+	if err != nil {
+		return false
+	}
+
+	// 发送信号0来测试进程是否存在
+	err = process.Signal(os.Signal(syscall.Signal(0)))
+	return err == nil
 }

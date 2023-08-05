@@ -1,9 +1,6 @@
 package container
 
 import (
-	"os"
-	"path"
-
 	"github.com/sirupsen/logrus"
 
 	"go-docker/common"
@@ -21,10 +18,12 @@ func RemoveContainer(containerName string) {
 		logrus.Errorf("can't remove running container")
 		return
 	}
-	dir := path.Join(common.DefaultContainerInfoPath, containerName)
-	err = os.RemoveAll(dir)
+
+	// 删除容器工作空间
+	err = DeleteWorkSpace(containerName, info.Volume)
 	if err != nil {
-		logrus.Errorf("remove container dir: %s, err: %v", dir, err)
-		return
+		logrus.Errorf("delete work space, err: %v", err)
 	}
+	// 删除容器信息
+	DeleteContainerInfo(containerName)
 }

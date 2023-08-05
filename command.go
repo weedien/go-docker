@@ -73,9 +73,7 @@ var runCommand = cli.Command{
 		// cmdArray 为容器运行后，执行的第一个命令信息
 		// cmdArray[0] 为镜像名, .Tail() 是去掉第一个后的全部参数
 		var cmdArray []string
-		for _, arg := range ctx.Args().Tail() {
-			cmdArray = append(cmdArray, arg)
-		}
+		cmdArray = append(cmdArray, ctx.Args().Tail()...)
 
 		tty := ctx.Bool("ti")
 		detach := ctx.Bool("d")
@@ -164,9 +162,7 @@ var execCommand = cli.Command{
 		}
 
 		var cmdArray []string
-		for _, arg := range ctx.Args().Tail() {
-			cmdArray = append(cmdArray, arg)
-		}
+		cmdArray = append(cmdArray, ctx.Args().Tail()...)
 
 		containerName := ctx.Args().Get(0)
 		container.ExecContainer(containerName, cmdArray)
@@ -219,7 +215,7 @@ var networkCommand = cli.Command{
 			},
 			Action: func(context *cli.Context) error {
 				if len(context.Args()) < 1 {
-					return fmt.Errorf("Missing network name")
+					return fmt.Errorf("missing network name")
 				}
 				err := network.Init()
 				if err != nil {
@@ -253,7 +249,7 @@ var networkCommand = cli.Command{
 			Usage: "remove container network",
 			Action: func(context *cli.Context) error {
 				if len(context.Args()) < 1 {
-					return fmt.Errorf("Missing network name")
+					return fmt.Errorf("missing network name")
 				}
 
 				err := network.Init()

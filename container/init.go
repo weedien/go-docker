@@ -16,8 +16,6 @@ import (
 // 使用mount挂载proc文件系统
 // 以便后面通过`ps`等系统命令查看当前进程资源的情况
 func RunContainerInitProcess() error {
-	logrus.Infof("init start ...")
-
 	cmdArray := readUserCommand()
 
 	if len(cmdArray) == 0 {
@@ -46,12 +44,40 @@ func RunContainerInitProcess() error {
 		path = cmdArray[0]
 	}
 
+	logrus.Infof("find cmd path: %v", path)
+
 	err = syscall.Exec(path, cmdArray[0:], os.Environ())
 	if err != nil {
 		return err
 	}
+
 	return nil
 }
+
+// func receiveSignal() {
+// 	// 创建一个信号通道用于接收信号
+// 	sigCh := make(chan os.Signal, 1)
+
+// 	// 将 SIGTERM 信号发送到 sigCh 通道
+// 	signal.Notify(sigCh, syscall.SIGTERM)
+
+// 	// 启动一个 goroutine 来处理信号
+// 	go func() {
+// 		// 阻塞直到收到信号
+// 		<-sigCh
+
+// 		// 删除容器工作空间
+// 		err := DeleteWorkSpace(containerName, volume)
+// 		if err != nil {
+// 			logrus.Errorf("delete work space, err: %v", err)
+// 		}
+// 		// 删除容器信息
+// 		DeleteContainerInfo(containerName)
+
+// 		// 结束程序
+// 		os.Exit(0)
+// 	}()
+// }
 
 func readUserCommand() []string {
 	// 指 index 为 3的文件描述符，

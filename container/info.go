@@ -3,7 +3,6 @@ package container
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"go-docker/common"
 	"io/ioutil"
 	"math/rand"
@@ -13,6 +12,8 @@ import (
 	"strings"
 	"text/tabwriter"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 type ContainerInfo struct {
@@ -27,14 +28,16 @@ type ContainerInfo struct {
 }
 
 // 记录容器信息
-func RecordContainerInfo(containerPID int, cmdArray []string, containerName, containerID string) error {
+func RecordContainerInfo(containerPID int, cmdArray []string, containerName, containerID string, volume string, ports []string) error {
 	info := &ContainerInfo{
-		Pid:        strconv.Itoa(containerPID),
-		Id:         containerID,
-		Command:    strings.Join(cmdArray, ""),
-		Name:       containerName,
-		CreateTime: time.Now().Format("2006-01-02 15:04:05"),
-		Status:     common.Running,
+		Pid:         strconv.Itoa(containerPID),
+		Id:          containerID,
+		Command:     strings.Join(cmdArray, ""),
+		Name:        containerName,
+		CreateTime:  time.Now().Format("2006-01-02 15:04:05"),
+		Status:      common.Running,
+		Volume:      volume,
+		PortMapping: ports,
 	}
 
 	dir := path.Join(common.DefaultContainerInfoPath, containerName)

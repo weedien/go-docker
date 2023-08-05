@@ -39,6 +39,9 @@ func NewParentProcess(tty bool, volume, containerName, imageName string, envs []
 			logrus.Errorf("create log file, err: %v", err)
 		}
 		cmd.Stdout = file
+		// 需要设置（以阻塞进程），否则进程会直接退出
+		cmd.Stdin = os.Stdin
+		cmd.Stderr = file
 	}
 	// 设置额外文件句柄
 	cmd.ExtraFiles = []*os.File{

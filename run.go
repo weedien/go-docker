@@ -5,6 +5,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -28,7 +29,7 @@ func Run(cmdArray []string, tty bool, res *subsystem.ResourceConfig, containerNa
 		return
 	}
 	// 记录容器信息
-	err := container.RecordContainerInfo(parent.Process.Pid, cmdArray, containerName, containerID)
+	err := container.RecordContainerInfo(parent.Process.Pid, cmdArray, containerName, containerID, volume, ports)
 	if err != nil {
 		logrus.Errorf("record container info, err: %v", err)
 	}
@@ -79,6 +80,9 @@ func Run(cmdArray []string, tty bool, res *subsystem.ResourceConfig, containerNa
 		// 删除容器信息
 		container.DeleteContainerInfo(containerName)
 	}
+
+	// 等待init子进程创建完毕
+	time.Sleep(300 * time.Millisecond)
 
 	logrus.Infof("run process end")
 }
