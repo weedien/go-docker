@@ -16,8 +16,11 @@ import (
 // 使用mount挂载proc文件系统
 // 以便后面通过`ps`等系统命令查看当前进程资源的情况
 func RunContainerInitProcess() error {
+	logrus.Infof("init start ...")
+
 	cmdArray := readUserCommand()
-	if cmdArray == nil || len(cmdArray) == 0 {
+
+	if len(cmdArray) == 0 {
 		return fmt.Errorf("get user command in run container")
 	}
 	// 挂载
@@ -25,6 +28,16 @@ func RunContainerInitProcess() error {
 	if err != nil {
 		logrus.Errorf("set up mount, err: %v", err)
 		return err
+	}
+
+	// 获取当前的环境变量PATH的值
+	currentPath := os.Getenv("PATH")
+
+	// 检查是否已经包含/bin，如果不包含则在后面加上
+	if !strings.Contains(currentPath, ":/bin") && !strings.Contains(currentPath, "=/bin") {
+		newPath := currentPath + ":/bin"
+		// 设置修改后的环境变量PATH
+		os.Setenv("PATH", newPath)
 	}
 
 	// 在系统环境 PATH中寻找命令的绝对路径

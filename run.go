@@ -67,7 +67,7 @@ func Run(cmdArray []string, tty bool, res *subsystem.ResourceConfig, containerNa
 
 	if tty {
 		// 等待父进程结束
-		err := parent.Wait()
+		err = parent.Wait()
 		if err != nil {
 			logrus.Errorf("parent wait, err: %v", err)
 		}
@@ -79,6 +79,8 @@ func Run(cmdArray []string, tty bool, res *subsystem.ResourceConfig, containerNa
 		// 删除容器信息
 		container.DeleteContainerInfo(containerName)
 	}
+
+	logrus.Infof("run process end")
 }
 
 func sendInitCommand(comArray []string, writePipe *os.File) {

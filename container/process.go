@@ -51,6 +51,6 @@ func NewParentProcess(tty bool, volume, containerName, imageName string, envs []
 		logrus.Errorf("new work space, err: %v", err)
 	}
 	// 指定容器初始化后的工作目录
-	cmd.Dir = common.MntPath
+	cmd.Dir = path.Join(common.MntPath, containerName)
 	return cmd, writePipe
 }

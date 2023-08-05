@@ -160,7 +160,12 @@ func DeleteWorkSpace(containerName, volume string) error {
 	if err != nil {
 		return err
 	}
-	// 3. 删除宿主机与文件系统映射
+	// 3. 删除overlay的工作目录
+	err = deleteWorkPath(containerName)
+	if err != nil {
+		return err
+	}
+	// 4. 删除宿主机与文件系统映射
 	deleteVolume(containerName, volume)
 	return nil
 }
@@ -182,6 +187,11 @@ func unMountPoint(containerName string) error {
 func deleteWriteLayer(containerName string) error {
 	writerLayerPath := path.Join(common.RootPath, common.WriteLayer, containerName)
 	return os.RemoveAll(writerLayerPath)
+}
+
+func deleteWorkPath(containerName string) error {
+	workPath := path.Join(common.RootPath, common.WorkPath, containerName)
+	return os.RemoveAll(workPath)
 }
 
 func deleteVolume(containerName, volume string) {
